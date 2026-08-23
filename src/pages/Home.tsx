@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useScroll, useSpring, useInView } from "framer
 import {
   ArrowRight,
   ArrowUpRight,
+  ArrowUp,
   GraduationCap,
   Globe,
   Stethoscope,
@@ -68,6 +69,20 @@ import profileBuilding from "@/assets/images/profile-building.webp";
 
 const BOOKING_FORM = "https://forms.gle/FjFZ1nFMvuFY1MyB9";
 const CONTACT_EMAIL = "ai.vet.ml@gmail.com";
+
+/*
+ * Success stories stay hidden until real mentee quotes are in.
+ * To publish: replace the sample quotes with real ones and set
+ * SHOW_TESTIMONIALS to true. To preview on the live site, open
+ * the page with ?demo-testimonials appended to the URL.
+ */
+const SHOW_TESTIMONIALS = false;
+
+const TESTIMONIALS = [
+  { quote: "Sample quote — replace with a real mentee's words. Raj mapped out my entire MBBS application to Europe: which countries, which entrance exams, what it would really cost. I'm in my first year now.", name: "Mentee name", detail: "Medicine · Poland", accent: "from-blue-500 to-cyan-400" },
+  { quote: "Sample quote — replace with a real mentee's words. After two US visa rejections I almost gave up. The Europe route Raj showed me got me into a TU9 master's with no tuition fees.", name: "Mentee name", detail: "Engineering · Germany", accent: "from-amber-500 to-orange-400" },
+  { quote: "Sample quote — replace with a real mentee's words. The CV and LinkedIn overhaul alone was worth it. I signed my first EU job offer three months after graduating.", name: "Mentee name", detail: "Career Roadmap · Netherlands", accent: "from-emerald-500 to-teal-400" },
+];
 const LINKEDIN = "https://www.linkedin.com/in/nagaraj21/";
 
 /* ---------- helpers ---------- */
@@ -278,6 +293,30 @@ function NewsTicker() {
         ))}
       </div>
     </div>
+  );
+}
+
+/* ---------- back to top ---------- */
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 700);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <motion.button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to top"
+      initial={false}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 16, pointerEvents: visible ? "auto" : "none" }}
+      transition={{ duration: 0.25 }}
+      className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-cyan-400 text-white shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 transition-transform"
+      data-testid="button-back-to-top"
+    >
+      <ArrowUp size={20} />
+    </motion.button>
   );
 }
 
@@ -1030,6 +1069,42 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 7b. SUCCESS STORIES (hidden until real quotes are in — see SHOW_TESTIMONIALS) */}
+      {(SHOW_TESTIMONIALS || (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("demo-testimonials"))) && (
+        <section id="success-stories" className="py-24 bg-white relative overflow-hidden">
+          <div className="container mx-auto px-6 md:px-10">
+            <motion.div {...reveal} className="text-center max-w-2xl mx-auto mb-14">
+              <div className="eyebrow text-primary mb-4">Success Stories</div>
+              <h2 className="font-heading font-extrabold text-4xl md:text-5xl leading-tight">
+                They made it to <span className="text-gradient">Europe.</span>
+              </h2>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {TESTIMONIALS.map((item, i) => (
+                <motion.figure
+                  key={i}
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.6, delay: i * 0.12 }}
+                  className="relative bg-white rounded-3xl border border-border p-8 flex flex-col shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all overflow-hidden group"
+                  data-testid={`card-testimonial-${i}`}
+                >
+                  <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${item.accent}`} aria-hidden="true"></div>
+                  <Quote size={26} className="text-primary/40 mb-5" aria-hidden="true" />
+                  <blockquote className="text-zinc-700 leading-relaxed flex-grow text-sm md:text-base">{item.quote}</blockquote>
+                  <figcaption className="mt-6 pt-5 border-t border-border">
+                    <div className="font-heading font-bold text-zinc-900">{item.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{item.detail}</div>
+                  </figcaption>
+                </motion.figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 8. CONTACT */}
       <section id="contact" className="py-24 bg-midnight text-white relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-primary/25 blur-3xl animate-orb" aria-hidden="true"></div>
@@ -1093,6 +1168,8 @@ export default function Home() {
           <div className="text-sm text-white/40">© {new Date().getFullYear()} Career Co-Pilot 360. All rights reserved.</div>
         </div>
       </footer>
+
+      <BackToTop />
     </div>
   );
 }
